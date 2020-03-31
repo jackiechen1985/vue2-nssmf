@@ -3,13 +3,13 @@
     <div class="mwin">
       <div class="titlebar">
         <h2 class="title">
-          <i class="el-icon-files"></i>
+          <i class="el-icon-c-scale-to-original"></i>
           脚本包管理
         </h2>
-        <div style="float: right;">
+        <div class="btnbar">
           <el-button
             size="small"
-            type="primary"
+            type="info"
             plain
             icon="el-icon-upload2"
             @click="uploadDialogVisible = true"
@@ -17,7 +17,10 @@
         </div>
       </div>
       <div class="mainbody">
-        <el-table :data="scriptList" style="width: 100%;">
+        <el-table
+          :data="scriptList.slice((currentPage - 1) * pageSize, currentPage * pageSize)"
+          style="width: 100%;"
+        >
           <el-table-column label="脚本包名称" prop="scriptName"></el-table-column>
           <el-table-column label="URI" prop="scriptUri"></el-table-column>
           <el-table-column label="脚本包描述" prop="description"></el-table-column>
@@ -52,8 +55,8 @@
       type="success"
       :description="successData"
       @close="closeSuccessAlert"
-      show-icon>
-    </el-alert>
+      show-icon
+    ></el-alert>
     <el-alert
       class="alert"
       v-if="showError"
@@ -61,16 +64,18 @@
       type="error"
       :description="errorData"
       @close="closeErrorAlert"
-      show-icon>
-    </el-alert>
+      show-icon
+    ></el-alert>
     <el-dialog
       title="删除脚本包"
-      :close-on-click-modal = "false"
-      :close-on-press-escape = "false"
+      :close-on-click-modal="false"
+      :close-on-press-escape="false"
       :visible.sync="deleteDialogVisible"
-      width="30%">
+      width="30%"
+    >
       <el-row>
-        确认删除<span style="color: #409EFF; font-weight: bold;">{{selectedDeleteScript}}</span>脚本包？
+        确认删除
+        <span style="color: #409EFF; font-weight: bold;">{{currentScript}}</span>脚本包？
       </el-row>
       <span slot="footer">
         <el-button size="small" @click="deleteDialogVisible = false">取 消</el-button>
@@ -78,22 +83,23 @@
       </span>
     </el-dialog>
     <el-dialog
-      title="导入"
+      title="导入脚本包"
       :close-on-click-modal="false"
       :close-on-press-escape="false"
       :visible.sync="uploadDialogVisible"
-      width="30%">
+      width="30%"
+    >
       <el-tabs v-model="activeTab" type="card">
         <el-tab-pane label="本地上传" name="localUpload"></el-tab-pane>
         <el-tab-pane label="远程服务器上传" name="remoteUpload"></el-tab-pane>
       </el-tabs>
       <el-col>
         <div>脚本包名称</div>
-        <el-input size = "mini" v-model="scriptName"></el-input>
+        <el-input size="mini" v-model="scriptName"></el-input>
       </el-col>
       <el-col>
         <div>脚本包描述</div>
-        <el-input size = "mini" v-model="description"></el-input>
+        <el-input size="mini" v-model="description"></el-input>
       </el-col>
       <el-col style="margin-top: 10px; margin-bottom: 5px;" v-if="activeTab == 'localUpload'">
         <el-upload
@@ -108,7 +114,8 @@
           :on-preview="handlePreview"
           :on-remove="handleRemove"
           :file-list="fileList"
-          :auto-upload="false">
+          :auto-upload="false"
+        >
           <el-button size="small" slot="trigger" type="primary">选取文件</el-button>
         </el-upload>
       </el-col>
@@ -130,7 +137,7 @@
           type="success"
           icon="el-icon-upload"
           @click="submitLocalUpload"
-          >上载脚本包</el-button>
+        >上载脚本包</el-button>
         <el-button
           v-if="activeTab == 'remoteUpload'"
           :disabled="scriptName.length <= 0 || remoteAddress.length <= 0"
@@ -139,7 +146,7 @@
           type="success"
           icon="el-icon-upload"
           @click="submitRemoteUpload"
-          >上载脚本包</el-button>
+        >上载脚本包</el-button>
       </span>
     </el-dialog>
   </div>
@@ -159,7 +166,7 @@ export default {
       pageSize: 10,
       uploadDialogVisible: false,
       deleteDialogVisible: false,
-      selectedDeleteScript: '',
+      currentScript: '',
       showSuccess: false,
       successTitle: '',
       successData: '',
@@ -174,9 +181,7 @@ export default {
     }
   },
   computed: {
-    ...mapState([
-      'scriptList'
-    ])
+    ...mapState(['scriptList'])
   },
   created () {
     // Retrieve all scripts from server
@@ -194,30 +199,42 @@ export default {
       this.currentPage = currentPage
     },
     deleteScript (obj) {
-      this.selectedDeleteScript = obj.scriptName
+      this.currentScript = obj.scriptName
       this.deleteDialogVisible = true
     },
     comfirmDelete () {
-      API.deleteScript(this.selectedDeleteScript).then(res => {
-        this.deleteDialogVisible = false
-        this.openSucessAlert(this.selectedDeleteScript, '删除' + this.selectedDeleteScript + '脚本包成功！')
-      }).catch(error => {
-        console.log(error)
-        this.deleteDialogVisible = false
-        this.openErrorAlert(this.selectedDeleteScript, '删除' + this.selectedDeleteScript + '脚本包失败！')
-      })
+      API.deleteScript(this.currentScript)
+        .then(res => {
+          this.openSucessAlert(
+            this.currentScript,
+            '删除' + this.currentScript + '脚本包成功！'
+          )
+          this.deleteDialogVisible = false
+        })
+        .catch(error => {
+          console.log(error)
+          this.openErrorAlert(
+            this.currentScript,
+            '删除' + this.currentScript + '脚本包失败！'
+          )
+          this.deleteDialogVisible = false
+        })
     },
     openSucessAlert (title, data) {
       this.successTitle = title
       this.successData = data
       this.showSuccess = true
-      setTimeout(() => { this.closeSuccessAlert() }, 2000)
+      setTimeout(() => {
+        this.closeSuccessAlert()
+      }, 2000)
     },
     openErrorAlert (title, data) {
       this.errorTitle = title
       this.errorData = data
       this.showError = true
-      setTimeout(() => { this.closeErrorAlert() }, 2000)
+      setTimeout(() => {
+        this.closeErrorAlert()
+      }, 2000)
     },
     closeSuccessAlert () {
       this.showSuccess = false
@@ -233,13 +250,15 @@ export default {
       this.$refs.upload.submit()
     },
     submitRemoteUpload () {
-      API.remoteUpload({
+      API.remoteUploadScript({
         scriptName: this.scriptName,
         description: this.description,
         scriptUri: 'http://' + this.remoteAddress
       }).then(res => {
-        this.openSucessAlert(this.scriptName, '导入' + this.scriptName + '脚本包成功！')
-        this.uploadDialogVisible = false
+        this.openSucessAlert(
+          this.scriptName,
+          '导入' + this.scriptName + '脚本包成功！'
+        )
         this.scriptName = ''
         this.description = ''
         this.remoteAddress = ''
@@ -247,43 +266,43 @@ export default {
         if (error.response) {
           this.openErrorAlert(this.scriptName, error.response.data)
         }
-        this.uploadDialogVisible = false
         this.scriptName = ''
         this.description = ''
         this.remoteAddress = ''
       })
+      this.uploadDialogVisible = false
     },
     refreshScript () {
-      API.findAllScript().then(res => {
-        this.saveScript(res)
-      }).catch(error => {
-        return Promise.reject(error)
-      })
+      API.findAllScript()
+        .then(res => {
+          this.saveScriptToStore(res)
+        })
+        .catch(error => {
+          return Promise.reject(error)
+        })
     },
     httpRequest (params) {
-      API.localUpload({
+      API.localUploadScript({
         scriptName: this.scriptName,
         description: this.description,
         file: params.file
       }).then(res => {
-        this.successTitle = this.scriptName
-        this.successData = '导入' + this.scriptName + '脚本包成功！'
-        this.showSuccess = true
-        setTimeout(() => { this.closeSuccessAlert() }, 1000)
-        this.uploadDialogVisible = false
+        this.openSucessAlert(
+          this.scriptName,
+          '导入' + this.scriptName + '脚本包成功！'
+        )
         this.scriptName = ''
         this.description = ''
         this.fileList = []
+        this.uploadDialogVisible = false
       }).catch(error => {
         if (error.response) {
-          this.errorTitle = this.scriptName
-          this.errorData = error.response.data
-          this.showError = true
-          setTimeout(() => { this.closeErrorAlert() }, 1000)
+          this.openErrorAlert(this.scriptName, error.response.data)
         }
         this.scriptName = ''
         this.description = ''
         this.fileList = []
+        this.uploadDialogVisible = false
         return Promise.reject(error)
       })
     },
@@ -305,53 +324,13 @@ export default {
     handleRemove (file, fileList) {
       this.fileList = fileList
     },
-    ...mapMutations(['saveScript'])
+    ...mapMutations(['saveScriptToStore'])
   }
 }
 </script>
 
 <style lang="scss" scoped>
-.mwin {
-  position: absolute;
-  bottom: 33px;
-  top: 55px;
-  left: 30px;
-  right: 30px;
-  min-width: 964px;
-  min-height: 300px;
-}
-
-.titlebar {
-  height: 43px;
-  line-height: 32px;
-  padding: 3px 0 8px 0;
-}
-
-.title {
-  display: inline-block;
-  font-weight: bold;
-  color: #4d5766;
-}
-
-.mainbody {
-  position: absolute;
-  /* 1 for border */
-  left: -1px;
-  right: -1px;
-  top: 50px;
-  bottom: -1px;
-}
-
-.alert {
-  width: 22% !important;
-  position: absolute !important;
-  bottom: 0px;
-}
-
-.pagination {
-  float: right;
-  margin-top: 15px;
-}
+@import '../assets/common';
 
 .el-col-local-upload {
   margin-top: 10px;

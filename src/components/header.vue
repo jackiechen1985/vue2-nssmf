@@ -11,7 +11,7 @@
     >
       <el-menu-item index="0" class="nav-img-item">
         <span>
-          <img src="../assets/images/NOKIA_SBELL_LOGO_H_WHITE_HR.png" alt />
+          <img src="/images/NOKIA_SBELL_LOGO_H_WHITE_HR.png" alt />
         </span>
       </el-menu-item>
       <el-menu-item index="/nssi" class="nav-item" @click="gotoAddress({path: '/nssi'})">
@@ -89,8 +89,10 @@ export default {
     handleSelect (key, keyPath) {
       console.log(key, keyPath)
     },
-    gotoAddress (path) {
-      this.$router.push(path)
+    gotoAddress (obj) {
+      if (this.$route.path.indexOf(obj.path) === -1) {
+        this.$router.push(obj)
+      }
     },
     doLogout () {
       API.logout().then(res => {

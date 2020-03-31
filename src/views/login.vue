@@ -1,7 +1,7 @@
 <template>
   <div class="login-bg">
     <div class="login-w">
-      <img style="width:100%" src="../assets/images/NOKIA_SBELL_LOGO_H_WHITE_MR.png" />
+      <img style="width:100%" src="/images/NOKIA_SBELL_LOGO_H_WHITE_MR.png" />
       <el-input
         v-model="userName"
         ref="userName"
@@ -72,13 +72,11 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import '../assets/mixin';
+
 .login-bg {
-  width: 100%;
-  height: 100%;
-  background-image: url("../assets/images/panel.hello.bk.jpg");
-  background-position: center;
-  background-repeat: no-repeat;
-  background-size: 100% 100%;
+  @include wh(100%, 100%);
+  @include bi('/images/panel.hello.bk.jpg');
 }
 
 .login-w {

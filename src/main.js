@@ -29,38 +29,4 @@ var vm = new Vue({
   render: h => h(App)
 }).$mount('#app')
 
-// Axios initialization
-axios.delete.withCredentials = false
-// axios.defaults.headers.common.accessToken = undefined
-axios.defaults.headers.post['Content-Type'] = 'application/json;charset=UTF-8'
-axios.interceptors.request.use(config => {
-  const token = window.sessionStorage.getItem('token')
-  if (token) {
-    config.headers.common.accessToken = token
-  }
-  return config
-}, error => {
-  return Promise.reject(error)
-})
-
-axios.interceptors.response.use(response => {
-  console.log(response.data)
-  return response
-}, error => {
-  switch (error.response.status) {
-    case 401: invalidSession()
-  }
-  return Promise.reject(error)
-})
-
-function invalidSession () {
-  vm.$alert('登录过期，请重新登录！', ' 登录过期', {
-    confirmButtonText: '确定',
-    type: 'warning',
-    callback: () => {
-      router.push('/login')
-    }
-  })
-}
-
 export default vm

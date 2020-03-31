@@ -137,27 +137,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.mwin {
-  position: absolute;
-  bottom: 33px;
-  top: 55px;
-  left: 30px;
-  right: 30px;
-  min-width: 964px;
-  min-height: 300px;
-}
-
-.titlebar {
-  height: 43px;
-  line-height: 32px;
-  padding: 3px 0 8px 0;
-}
-
-.title {
-  display: inline-block;
-  font-weight: bold;
-  color: #4d5766;
-}
+@import '../assets/common';
 
 .mainbody {
   margin: 50px auto;
@@ -172,9 +152,4 @@ export default {
   margin-top: 5px;
 }
 
-.alert {
-  width: 22% !important;
-  position: absolute !important;
-  bottom: 0px;
-}
 </style>
